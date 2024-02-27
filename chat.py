@@ -1,7 +1,7 @@
 import os
 import torch
 import time
-from modelscope import AutoTokenizer, snapshot_download
+from transformers import AutoTokenizer
 from auto_gptq import AutoGPTQForCausalLM
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
