@@ -63,7 +63,7 @@ async def create_item(request: Request):
 
 # 主函数入口
 if __name__ == '__main__':
-    mode_path = '../CodeFuse-DeepSeek-33B-4bits'
+    model_path = '../CodeFuse-DeepSeek-33B-4bits'
     # 加载预训练的分词器和模型
     tokenizer = AutoTokenizer.from_pretrained(model_path,
                                               trust_remote_code=True,
