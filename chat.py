@@ -11,7 +11,7 @@ def load_model_tokenizer(model_path):
     Load model and tokenizer based on the given model name or local path of downloaded model.
     """
     tokenizer = AutoTokenizer.from_pretrained(model_path, 
-                                              trust_remote_code=True, 
+                                              trust_remote_code=False, 
                                               use_fast=False,
                                               lagecy=False)
     tokenizer.padding_side = "left"
