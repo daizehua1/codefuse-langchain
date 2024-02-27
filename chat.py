@@ -9,7 +9,7 @@ from auto_gptq import AutoGPTQForCausalLM
 class DeepSeek_LLM(LLM):
     # 基于本地 InternLM 自定义 LLM 类
     tokenizer : AutoTokenizer = None
-    model: AutoModelForCausalLM = None
+    model: AutoGPTQForCausalLM = None
 
     def __init__(self, model_path :str):
         # model_path: InternLM 模型路径
