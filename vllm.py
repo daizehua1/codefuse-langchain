@@ -17,7 +17,7 @@ st.title("💬 DeepSeek Chatbot")
 st.caption("🚀 A streamlit chatbot powered by Self-LLM")
 
 # 定义模型路径
-mode_name_or_path = '/root/autodl-tmp/deepseek-ai/deepseek-llm-7b-chat'
+mode_name_or_path = '../CodeFuse-DeepSeek-33B-4bits'
 
 
 # 定义一个函数，用于获取模型和tokenizer
