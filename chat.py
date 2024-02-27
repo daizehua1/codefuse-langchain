@@ -3,6 +3,7 @@ from typing import Any, List, Optional
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 import torch
+from auto_gptq import AutoGPTQForCausalLM
 
 
 class DeepSeek_LLM(LLM):
@@ -16,7 +17,7 @@ class DeepSeek_LLM(LLM):
         super().__init__()
         print("正在从本地加载模型...")
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-        self.model = AutoModelForCausalLM.load_quant(model_path, trust_remote_code=True,
+        self.model = AutoGPTQForCausalLM.load_quant(model_path, trust_remote_code=True,
                                                           torch_dtype=torch.bfloat16, device_map="auto")
         self.model.generation_config = GenerationConfig.from_pretrained(model_path)
         self.model.generation_config.pad_token_id = self.model.generation_config.eos_token_id
