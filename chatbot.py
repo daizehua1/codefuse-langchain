@@ -16,7 +16,7 @@ st.title("💬 DeepSeek Chatbot")
 st.caption("🚀 A streamlit chatbot powered by Self-LLM")
 
 # 定义模型路径
-mode_name_or_path = 'CodeFuse-DeepSeek-33B-4bits'
+mode_name_or_path = r'../CodeFuse-DeepSeek-33B-4bits'
 
 # 定义一个函数，用于获取模型和tokenizer
 @st.cache_resource
@@ -27,7 +27,7 @@ def get_model():
     # model = AutoModelForCausalLM.from_pretrained(mode_name_or_path, trust_remote_code=True,torch_dtype=torch.bfloat16,  device_map="auto")
     model = VLLM
     (
-    model="CodeFuse-DeepSeek-33B-4bits",
+    model="../CodeFuse-DeepSeek-33B-4bits",
     trust_remote_code=True,  # mandatory for hf models
     max_new_tokens=128,
     top_k=10,
