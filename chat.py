@@ -1,67 +1,42 @@
-import os
+from langchain.llms.base import LLM
+from typing import Any, List, Optional
+from langchain.callbacks.manager import CallbackManagerForLLMRun
+from transformers import GenerationConfig
 import torch
-import time
 from modelscope import AutoTokenizer, snapshot_download
 from auto_gptq import AutoGPTQForCausalLM
 
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
+class DeepSeek_LLM(LLM):
+    # 基于本地 InternLM 自定义 LLM 类
+    tokenizer : AutoTokenizer = None
+    model: AutoModelForCausalLM = None
 
-def load_model_tokenizer(model_path):
-    """
-    Load model and tokenizer based on the given model name or local path of downloaded model.
-    """
-    tokenizer = AutoTokenizer.from_pretrained(model_path, 
-                                              trust_remote_code=False, 
-                                              use_fast=False,
-                                              lagecy=False)
-    tokenizer.padding_side = "left"
-    tokenizer.pad_token_id = tokenizer.convert_tokens_to_ids("<｜end▁of▁sentence｜>")
-    tokenizer.eos_token_id = tokenizer.convert_tokens_to_ids("<｜end▁of▁sentence｜>")
+    def __init__(self, model_path :str):
+        # model_path: InternLM 模型路径
+        # 从本地初始化模型
+        super().__init__()
+        print("正在从本地加载模型...")
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=False)
+        self.model = AutoModelForCausalLM.from_quantized(model_path, trust_remote_code=True,torch_dtype=torch.bfloat16,  device_map="auto")
+        self.model.generation_config = GenerationConfig.from_pretrained(model_path)
+        self.model.generation_config.pad_token_id = self.model.generation_config.eos_token_id
+        self.model = self.model.eval()
+        print("完成本地模型的加载")
 
-    model = AutoGPTQForCausalLM.from_quantized(model_path, 
-                                                inject_fused_attention=False,
-                                                inject_fused_mlp=False,
-                                                use_safetensors=True,
-                                                use_cuda_fp16=True,
-                                                disable_exllama=False,
-                                                device_map='auto'   # Support multi-gpus
-                                              )
-    return model, tokenizer
-
-
-def inference(model, tokenizer, prompt):
-    """
-    Uset the given model and tokenizer to generate an answer for the speicifed prompt.
-    """
-    st = time.time()
-    prompt = prompt if prompt.endswith('\n') else f'{prompt}\n'
-    inputs =  f"<s>human\n{prompt}<s>bot\n"
-
-    input_ids = tokenizer.encode(inputs, 
-                                  return_tensors="pt", 
-                                  padding=True, 
-                                  add_special_tokens=False).to("cuda")
-    with torch.no_grad():
-        generated_ids = model.generate(
-            input_ids=input_ids,
-            top_p=0.95,
-            temperature=0.1,
-            do_sample=True,
-            max_new_tokens=512,
-            eos_token_id=tokenizer.eos_token_id,
-            pad_token_id=tokenizer.pad_token_id              
-        )
-    print(f'generated tokens num is {len(generated_ids[0][input_ids.size(1):])}')
-    outputs = tokenizer.batch_decode(generated_ids, skip_special_tokens=True) 
-    print(f'generate text is {outputs[0][len(inputs): ]}')
-    latency = time.time() - st
-    print('latency is {} seconds'.format(latency))
-
-    
-if __name__ == "__main__":
-    model_dir = "../ CodeFuse-DeepSeek-33B-4bits"
-
-    prompt = 'Please write a QuickSort program in Python'
-
-    model, tokenizer = load_model_tokenizer(model_dir)
-    inference(model, tokenizer, prompt)
+    def _call(self, prompt : str, stop: Optional[List[str]] = None,
+                run_manager: Optional[CallbackManagerForLLMRun] = None,
+                **kwargs: Any):
+        # 重写调用函数
+        messages = [
+            {"role": "user", "content": prompt}
+        ]
+        # 构建输入     
+        input_tensor = self.tokenizer.apply_chat_template(messages, add_generation_prompt=True, return_tensors="pt")
+        # 通过模型获得输出
+        outputs = self.model.generate(input_tensor.to(self.model.device), max_new_tokens=100)
+        response = self.tokenizer.decode(outputs[0][input_tensor.shape[1]:], skip_special_tokens=True)
+        return response
+        
+    @property
+    def _llm_type(self) -> str:
+        return "DeepSeek_LLM"
