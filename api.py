@@ -63,13 +63,24 @@ async def create_item(request: Request):
 
 # 主函数入口
 if __name__ == '__main__':
-    mode_name_or_path = '../CodeFuse-DeepSeek-33B-4bits'
+    mode_path = '../CodeFuse-DeepSeek-33B-4bits'
     # 加载预训练的分词器和模型
-    tokenizer = AutoTokenizer.from_pretrained(mode_name_or_path, trust_remote_code=True)
-    model =  AutoGPTQForCausalLM.from_quantized(mode_name_or_path, trust_remote_code=True, torch_dtype=torch.bfloat16,
-                                                 device_map="auto")
-    model.generation_config = GenerationConfig.from_pretrained(mode_name_or_path)
-    model.generation_config.pad_token_id = model.generation_config.eos_token_id
+    tokenizer = AutoTokenizer.from_pretrained(model_path,
+                                              trust_remote_code=True,
+                                              use_fast=False,
+                                              lagecy=False)
+    tokenizer.padding_side = "left"
+    tokenizer.pad_token_id = tokenizer.convert_tokens_to_ids("<｜end▁of▁sentence｜>")
+    tokenizer.eos_token_id = tokenizer.convert_tokens_to_ids("<｜end▁of▁sentence｜>")
+
+    model = AutoGPTQForCausalLM.from_quantized(model_path,
+                                               inject_fused_attention=False,
+                                               inject_fused_mlp=False,
+                                               use_safetensors=True,
+                                               use_cuda_fp16=True,
+                                               disable_exllama=False,
+                                               device_map='auto'  # Support multi-gpus
+                                               )
     model.eval()  # 设置模型为评估模式
     # 启动FastAPI应用
     # 用6006端口可以将autodl的端口映射到本地，从而在本地使用api
