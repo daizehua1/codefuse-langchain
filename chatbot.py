@@ -27,7 +27,7 @@ def get_model():
     # model = AutoModelForCausalLM.from_pretrained(mode_name_or_path, trust_remote_code=True,torch_dtype=torch.bfloat16,  device_map="auto")
     model = VLLM
     (
-    model=r"../CodeFuse-DeepSeek-33B-4bits",
+    model="CodeFuse-DeepSeek-33B-4bits",
     trust_remote_code=True,  # mandatory for hf models
     max_new_tokens=128,
     top_k=10,
