@@ -66,7 +66,7 @@ if __name__ == '__main__':
     mode_name_or_path = '../CodeFuse-DeepSeek-33B-4bits'
     # 加载预训练的分词器和模型
     tokenizer = AutoTokenizer.from_pretrained(mode_name_or_path, trust_remote_code=True)
-    model = AutoModelForCausalLM.from_quantized(mode_name_or_path, trust_remote_code=True, torch_dtype=torch.bfloat16,
+    model =  AutoGPTQForCausalLM.from_quantized(mode_name_or_path, trust_remote_code=True, torch_dtype=torch.bfloat16,
                                                  device_map="auto")
     model.generation_config = GenerationConfig.from_pretrained(mode_name_or_path)
     model.generation_config.pad_token_id = model.generation_config.eos_token_id
