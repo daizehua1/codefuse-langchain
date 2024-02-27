@@ -17,7 +17,7 @@ class DeepSeek_LLM(LLM):
         super().__init__()
         print("正在从本地加载模型...")
         self.tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=False)
-        self.model = AutoModelForCausalLM.from_quantized(model_path, trust_remote_code=True,torch_dtype=torch.bfloat16,  device_map="auto")
+        self.model = AutoGPTQForCausalLM.from_quantized(model_path, trust_remote_code=True,torch_dtype=torch.bfloat16,  device_map="auto")
         self.model.generation_config = GenerationConfig.from_pretrained(model_path)
         self.model.generation_config.pad_token_id = self.model.generation_config.eos_token_id
         self.model = self.model.eval()
