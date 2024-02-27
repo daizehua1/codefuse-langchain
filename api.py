@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from transformers import , GenerationConfig
+from transformers import GenerationConfig
 import uvicorn
 import json
 import datetime
